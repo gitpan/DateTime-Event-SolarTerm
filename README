@@ -94,7 +94,7 @@ FUNCTIONS
   DateTime::Event::SolarTerm->minor_term()
     Returns the *starting* date of the next or previous major/minor solar
     term. This recurrence set makes no attempt to classify just what solar
-    term is beginning on that date. Use DateTime::Util::SolarTerm for that.
+    term is beginning on that date. (This may change in the future)
 
     Because solar terms depend on the location/timezone, you should make
     sure to pass a DateTime object with locale and/or timezone set to where

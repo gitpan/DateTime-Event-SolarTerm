@@ -147,6 +147,7 @@ sub prev_term_at
     my %args = Params::Validate::validate(@_, \%ValidateWithLongitude);
     my $rv = estimate_prior_solar_longitude(
         $args{datetime}, bf_downgrade($args{longitude}));
+
 	$rv->set_time_zone($args{datetime}->time_zone);
     return truncate_to_midday($rv);
 }
@@ -157,7 +158,6 @@ sub major_term_before
     my %args = Params::Validate::validate(@_, \%BasicValidate);
     my $dt   = $args{datetime};
 
-# local $DateTime::Util::Calc::NoBigFloat = 1;
     my $midnight = $dt->clone->truncate(to => 'day');
     my $l_current = solar_longitude($midnight) ;
     my $l = mod(30 * POSIX::floor($l_current / 30), 360);
@@ -171,9 +171,7 @@ sub minor_term_before
     my %args = Params::Validate::validate(@_, \%BasicValidate);
     my $dt   = $args{datetime};
 
-# local $DateTime::Util::Calc::NoBigFloat = 1;
     my $midnight = $dt->clone->truncate(to => 'day');
-#    my $l_current = solar_longitude($midnight) ;
     my $l        = mod(30 * POSIX::floor((solar_longitude($midnight) - 15) / 30) + 15, 360);
 
     return $self->prev_term_at(datetime => $dt, longitude => $l);
@@ -317,7 +315,7 @@ major holidays must be calculated based on these solar terms.
 
 Returns the I<starting> date of the next or previous major/minor solar term.
 This recurrence set makes no attempt to classify just what solar term
-is beginning on that date. Use DateTime::Util::SolarTerm for that.
+is beginning on that date. (This may change in the future)
 
 Because solar terms depend on the location/timezone, you should make
 sure to pass a DateTime object with locale and/or timezone set to
