@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: DateTime-Event-SolarTerm
-version: 0.03
+version: 0.04
 author:
   - Daisuke Maki E<lt>daisuke@cpan.orgE<gt>
 abstract: DateTime Extension to Calculate Solar Terms
@@ -17,5 +17,5 @@ conflicts: {}
 provides:
   DateTime::Event::SolarTerm:
     file: lib/DateTime/Event/SolarTerm.pm
-    version: 0.03
+    version: 0.04
 generated_by: Module::Build version 0.22

@@ -130,6 +130,9 @@ FUNCTIONS
     date falls on a minor term, returns the closest previous major term from
     the date given by the datetime argument.
 
+    If the major term can't be calculated (e.g. DateTime argument is a
+    DateTime::Infinite object), then returns undef.
+
     (This method has been renamed from current_major_term to better suit the
     behavior)
 
@@ -137,6 +140,9 @@ FUNCTIONS
     Returns the current/previous minor term index. Note that even if the
     date falls on a minor term, returns the closest previous minor term from
     the date given by the datetime argument.
+
+    If the major term can't be calculated (e.g. DateTime argument is a
+    DateTime::Infinite object), then returns undef.
 
     (This method has been renamed from current_minor_term to better suit the
     behavior)

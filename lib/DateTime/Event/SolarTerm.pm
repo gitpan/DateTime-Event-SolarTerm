@@ -5,7 +5,7 @@ package DateTime::Event::SolarTerm;
 use strict;
 use vars qw($VERSION @ISA %EXPORT_TAGS);
 BEGIN {
-    $VERSION = '0.03';
+    $VERSION = '0.04';
     @ISA     = qw(Exporter);
 
     # This code here will auto-generate the symbols from the given list.
@@ -89,8 +89,12 @@ sub major_term
 	my $class = shift;
     my $self  = $class->_new();
     return DateTime::Set->from_recurrence(
-        next     => sub { $self->major_term_after(datetime => $_[0]) },
-        previous => sub { $self->major_term_before(datetime => $_[0]) }
+        next     => sub {
+			return $_[0] if $_[0]->is_infinite;
+		  	$self->major_term_after(datetime => $_[0]) },
+        previous => sub {
+			return $_[0] if $_[0]->is_infinite;
+		 	$self->major_term_before(datetime => $_[0]) }
     );
 }
 
@@ -99,8 +103,12 @@ sub minor_term
 	my $class = shift;
     my $self  = $class->_new();
     return DateTime::Set->from_recurrence(
-        next     => sub { $self->minor_term_after(datetime => $_[0]) },
-        previous => sub { $self->minor_term_before(datetime => $_[0]) }
+        next     => sub {
+			return $_[0] if $_[0]->is_infinite;
+			$self->minor_term_after(datetime => $_[0]) },
+        previous => sub {
+			return $_[0] if $_[0]->is_infinite;
+			$self->minor_term_before(datetime => $_[0]) }
     );
 }
 
@@ -108,10 +116,13 @@ sub next_term_at
 {
 	my $self = shift;
     my %args = Params::Validate::validate(@_, \%ValidateWithLongitude);
-    my $rv = solar_longitude_after(
-        $args{datetime}, bf_downgrade($args{longitude}));
 
-	$rv->set_time_zone($args{datetime}->time_zone);
+	my $dt = $args{datetime};
+	return $dt if $dt->is_infinite;
+
+    my $rv = solar_longitude_after($dt, bf_downgrade($args{longitude}));
+
+	$rv->set_time_zone($dt->time_zone);
     return truncate_to_midday($rv);
 }
 
@@ -119,7 +130,9 @@ sub major_term_after
 {
 	my $self = shift;
     my %args = Params::Validate::validate(@_, \%BasicValidate);
-    my $dt   = $args{datetime};
+
+    my $dt = $args{datetime};
+	return $dt if $dt->is_infinite;
 
 # local $DateTime::Util::Calc::NoBigFloat = 1;
     my $midnight = $dt->clone->truncate(to => 'day');
@@ -132,7 +145,9 @@ sub minor_term_after
 {
 	my $self = shift;
     my %args = Params::Validate::validate(@_, \%BasicValidate);
-    my $dt   = $args{datetime};
+
+    my $dt = $args{datetime};
+	return $dt if $dt->is_infinite;
 
 # local $DateTime::Util::Calc::NoBigFloat = 1;
     my $midnight = $dt->clone->truncate(to => 'day');
@@ -146,6 +161,9 @@ sub prev_term_at
 	my $self = shift;
     my %args = Params::Validate::validate(@_, \%ValidateWithLongitude);
 
+	my $dt = $args{datetime};
+	return $dt if $dt->is_infinite;
+
     my $rv = estimate_prior_solar_longitude(
         $args{datetime}, bf_downgrade($args{longitude}));
 	$rv->set_time_zone($args{datetime}->time_zone);
@@ -156,7 +174,9 @@ sub major_term_before
 {
     my $self = shift;
     my %args = Params::Validate::validate(@_, \%BasicValidate);
-    my $dt   = $args{datetime};
+
+    my $dt = $args{datetime};
+	return $dt if $dt->is_infinite;
 
     my $midnight = $dt->clone->truncate(to => 'day');
     my $l_current = solar_longitude($midnight) ;
@@ -169,7 +189,9 @@ sub minor_term_before
 {
     my $self = shift;
     my %args = Params::Validate::validate(@_, \%BasicValidate);
-    my $dt   = $args{datetime};
+
+    my $dt = $args{datetime};
+	return $dt if $dt->is_infinite;
 
     my $midnight = $dt->clone->truncate(to => 'day');
     my $l        = mod(30 * POSIX::floor((solar_longitude($midnight) - 15) / 30) + 15, 360);
@@ -183,6 +205,8 @@ sub last_major_term_index
     my $self = shift;
     my %args = Params::Validate::validate(@_, \%BasicValidate);
 
+	return undef if $args{datetime}->is_infinite;
+
     my $l = solar_longitude($args{datetime});
     amod((2 + POSIX::floor(bf_downgrade($l) / 30)), 12);
 }
@@ -192,6 +216,8 @@ sub last_minor_term_index
 {
     my $self = shift;
     my %args = Params::Validate::validate(@_, \%BasicValidate);
+
+	return undef if $args{datetime}->is_infinite;
 
     my $l = solar_longitude($args{datetime});
     amod((3 + POSIX::floor((bf_downgrade($l) - 15) / 30)), 12);
@@ -368,6 +394,9 @@ Returns the current/previous major term index. Note that even if the date
 falls on a minor term, returns the closest previous major term from the date
 given by the datetime argument.
 
+If the major term can't be calculated (e.g. DateTime argument is a
+DateTime::Infinite object), then returns undef.
+
 (This method has been renamed from current_major_term to better suit the
 behavior)
 
@@ -376,6 +405,9 @@ behavior)
 Returns the current/previous minor term index. Note that even if the date
 falls on a minor term, returns the closest previous minor term from the date
 given by the datetime argument.
+
+If the major term can't be calculated (e.g. DateTime argument is a
+DateTime::Infinite object), then returns undef.
 
 (This method has been renamed from current_minor_term to better suit the
 behavior)

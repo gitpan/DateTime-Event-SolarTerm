@@ -13,7 +13,7 @@ my $build = Module::Build->new(
 		'Params::Validate' => 0,
 	},
 	sign => 1,
-	create_readme => 1,
+    create_readme      => 1,
     create_makefile_pl => 'passthrough'
 );
 $build->create_build_script;

@@ -1,6 +1,9 @@
 Changes
 =======
 
+0.04
+  - Be able to handle DateTime::Infinite objects being passed to methods.
+
 0.03 30 Jan 2004
   - Fix documentation (bad case of copy/paste)
 
