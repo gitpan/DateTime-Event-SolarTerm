@@ -1,6 +1,9 @@
 Changes
 =======
 
+0.03 30 Jan 2004
+  - Fix documentation (bad case of copy/paste)
+
 0.02 22 Jan 2004
   - Fix bad no_major_term_on(). This was causing much unhappiness in the
     calculations for month 12 -> month 1 of cycle 78, year 20 to 21

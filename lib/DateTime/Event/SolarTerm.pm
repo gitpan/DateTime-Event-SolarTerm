@@ -5,7 +5,7 @@ package DateTime::Event::SolarTerm;
 use strict;
 use vars qw($VERSION @ISA %EXPORT_TAGS);
 BEGIN {
-    $VERSION = '0.02';
+    $VERSION = '0.03';
     @ISA     = qw(Exporter);
 
     # This code here will auto-generate the symbols from the given list.
@@ -234,11 +234,11 @@ DateTime::Event::SolarTerm - DateTime Extension to Calculate Solar Terms
 =head1 SYNOPSIS
 
   use DateTime::Event::SolarTerm;
-  my $major_term = DateTime::Event::SolarTerm->new_moon();
+  my $major_term = DateTime::Event::SolarTerm->major_term();
 
   my $dt0  = DateTime->new(...);
-  my $next_major_term = $new_moon->next($dt0);
-  my $prev_major_term = $new_moon->previous($dt0);
+  my $next_major_term = $major_term->next($dt0);
+  my $prev_major_term = $major_term->previous($dt0);
 
   my $dt1  = DateTime->new(...);
   my $dt2  = DateTime->new(...);
@@ -251,11 +251,11 @@ DateTime::Event::SolarTerm - DateTime Extension to Calculate Solar Terms
     print $dt->datetime, "\n";
   }
 
-  my $minor_term = DateTime::Event::SolarTerm->new_moon();
+  my $minor_term = DateTime::Event::SolarTerm->minor_term();
 
   my $dt0  = DateTime->new(...);
-  my $next_minor_term = $new_moon->next($dt0);
-  my $prev_minor_term = $new_moon->previous($dt0);
+  my $next_minor_term = $minor_term->next($dt0);
+  my $prev_minor_term = $minor_term->previous($dt0);
 
   my $dt1  = DateTime->new(...);
   my $dt2  = DateTime->new(...);
@@ -267,10 +267,6 @@ DateTime::Event::SolarTerm - DateTime Extension to Calculate Solar Terms
   while (my $dt = $iter->next) {
     print $dt->datetime, "\n";
   }
-
-  my $lunar_phase = DateTime::Event::Lunar->lunar_phase(phase => $phase);
-  # same as new_moon, but returns DateTime objects
-  # when the lunar phase is at $phase degress.
 
   # if you just want to calculate a single major/minor term event
   my $dt = DateTime::Event::Lunar->major_term_after(datetime => $dt0);
