@@ -146,10 +146,8 @@ FUNCTIONS
     behavior)
 
   DateTime::Event::SolarTerm->no_major_term_on(%args)
-    Returns true if there is a major term in the current month
-
-    (XXX - from Calendrical Calculations, I couldn't figure out if this is a
-    Chinese month or a Gregorian month)
+    Returns true if there is a major term in the lunar month of the
+    specified date.
 
 AUTHOR
     Daisuke Maki <daisuke@cpan.org>

@@ -1,8 +1,10 @@
 --- #YAML:1.0
 name: DateTime-Event-SolarTerm
-version: 0.01
+version: 0.02
+author:
+  - Daisuke Maki E<lt>daisuke@cpan.orgE<gt>
+abstract: DateTime Extension to Calculate Solar Terms
 license: perl
-distribution_type: module
 requires:
   DateTime: 0
   DateTime::Set: 0
@@ -15,5 +17,5 @@ conflicts: {}
 provides:
   DateTime::Event::SolarTerm:
     file: lib/DateTime/Event/SolarTerm.pm
-    version: 0.01
-generated_by: Module::Build version 0.21
+    version: 0.02
+generated_by: Module::Build version 0.22

@@ -5,7 +5,7 @@ package DateTime::Event::SolarTerm;
 use strict;
 use vars qw($VERSION @ISA %EXPORT_TAGS);
 BEGIN {
-    $VERSION = '0.01';
+    $VERSION = '0.02';
     @ISA     = qw(Exporter);
 
     # This code here will auto-generate the symbols from the given list.
@@ -145,9 +145,9 @@ sub prev_term_at
 {
 	my $self = shift;
     my %args = Params::Validate::validate(@_, \%ValidateWithLongitude);
+
     my $rv = estimate_prior_solar_longitude(
         $args{datetime}, bf_downgrade($args{longitude}));
-
 	$rv->set_time_zone($args{datetime}->time_zone);
     return truncate_to_midday($rv);
 }
@@ -205,9 +205,22 @@ sub no_major_term_on
 
     my $next_new_moon = DateTime::Event::Lunar->new_moon_after(
         datetime => $args{datetime});
+
     return
-        $self->last_major_term_index(datetime => $args{datetime}) &&
+        $self->last_major_term_index(datetime => $args{datetime}) ==
         $self->last_major_term_index(datetime => $next_new_moon);
+}
+
+BEGIN
+{
+    if (eval { require Memoize } && !$@) {
+        Memoize::memoize('no_major_term_on', NORMALIZER => sub {
+            shift;
+            my %args = Params::Validate::validate(@_, \%BasicValidate);
+
+            ($args{datetime}->utc_rd_values)[0]
+        });
+    }
 }
 
 1;
@@ -373,10 +386,7 @@ behavior)
 
 =head2 DateTime::Event::SolarTerm-E<gt>no_major_term_on(%args)
 
-Returns true if there is a major term in the current month
-
-(XXX - from Calendrical Calculations, I couldn't figure out if this is
-a Chinese month or a Gregorian month)
+Returns true if there is a major term in the lunar month of the specified date.
 
 =head1 AUTHOR
 
