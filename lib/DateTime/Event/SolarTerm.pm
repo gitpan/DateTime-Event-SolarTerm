@@ -1,12 +1,17 @@
+# $Id: SolarTerm.pm 3698 2007-05-28 01:25:20Z lestrrat $
+#
+# Copyright (c) 2003-2007 Daisuke Maki <daisuke@endeworks.jp>
+#
 # Please see file "LICENSE" for license information on code from
 # "Calendrical Calculations".
  
 package DateTime::Event::SolarTerm;
 use strict;
+use warnings;
+use Exporter qw(import);
 use vars qw($VERSION @ISA %EXPORT_TAGS);
 BEGIN {
-    $VERSION = '0.04';
-    @ISA     = qw(Exporter);
+    $VERSION = '0.05';
 
     # This code here will auto-generate the symbols from the given list.
     # The list should have Chunfen/Shunbun (longitude = 0)
@@ -62,7 +67,7 @@ BEGIN {
 
 use DateTime;
 use DateTime::Set;
-use DateTime::Util::Calc qw(mod amod bf_downgrade min truncate_to_midday);
+use DateTime::Util::Calc qw(mod amod min truncate_to_midday);
 use DateTime::Util::Astro::Sun qw(
     solar_longitude solar_longitude_before solar_longitude_after
     estimate_prior_solar_longitude);
@@ -115,13 +120,12 @@ sub minor_term
 sub next_term_at
 {
 	my $self = shift;
-    my %args = Params::Validate::validate(@_, \%ValidateWithLongitude);
+    my %args = @_; #::Validate::validate(@_, \%ValidateWithLongitude);
 
 	my $dt = $args{datetime};
 	return $dt if $dt->is_infinite;
 
-    my $rv = solar_longitude_after($dt, bf_downgrade($args{longitude}));
-
+    my $rv = solar_longitude_after($dt, $args{longitude});
 	$rv->set_time_zone($dt->time_zone);
     return truncate_to_midday($rv);
 }
@@ -129,12 +133,11 @@ sub next_term_at
 sub major_term_after
 {
 	my $self = shift;
-    my %args = Params::Validate::validate(@_, \%BasicValidate);
+    my %args = @_; #::Validate::validate(@_, \%BasicValidate);
 
     my $dt = $args{datetime};
 	return $dt if $dt->is_infinite;
 
-# local $DateTime::Util::Calc::NoBigFloat = 1;
     my $midnight = $dt->clone->truncate(to => 'day');
     my $l  = mod(30 * POSIX::ceil(solar_longitude($midnight) / 30), 360);
 
@@ -144,12 +147,11 @@ sub major_term_after
 sub minor_term_after
 {
 	my $self = shift;
-    my %args = Params::Validate::validate(@_, \%BasicValidate);
+    my %args = @_; #::Validate::validate(@_, \%BasicValidate);
 
     my $dt = $args{datetime};
 	return $dt if $dt->is_infinite;
 
-# local $DateTime::Util::Calc::NoBigFloat = 1;
     my $midnight = $dt->clone->truncate(to => 'day');
     my $l        = mod(30 * POSIX::ceil((solar_longitude($midnight) - 15) / 30) + 15, 360);
 
@@ -159,13 +161,12 @@ sub minor_term_after
 sub prev_term_at
 {
 	my $self = shift;
-    my %args = Params::Validate::validate(@_, \%ValidateWithLongitude);
+    my %args = @_; #::Validate::validate(@_, \%ValidateWithLongitude);
 
 	my $dt = $args{datetime};
 	return $dt if $dt->is_infinite;
 
-    my $rv = estimate_prior_solar_longitude(
-        $args{datetime}, bf_downgrade($args{longitude}));
+    my $rv = estimate_prior_solar_longitude($args{datetime}, $args{longitude});
 	$rv->set_time_zone($args{datetime}->time_zone);
     return truncate_to_midday($rv);
 }
@@ -173,7 +174,7 @@ sub prev_term_at
 sub major_term_before
 {
     my $self = shift;
-    my %args = Params::Validate::validate(@_, \%BasicValidate);
+    my %args = @_; #::Validate::validate(@_, \%BasicValidate);
 
     my $dt = $args{datetime};
 	return $dt if $dt->is_infinite;
@@ -188,7 +189,7 @@ sub major_term_before
 sub minor_term_before
 {
     my $self = shift;
-    my %args = Params::Validate::validate(@_, \%BasicValidate);
+    my %args = @_; #::Validate::validate(@_, \%BasicValidate);
 
     my $dt = $args{datetime};
 	return $dt if $dt->is_infinite;
@@ -203,31 +204,31 @@ sub minor_term_before
 sub last_major_term_index
 {
     my $self = shift;
-    my %args = Params::Validate::validate(@_, \%BasicValidate);
+    my %args = @_; #::Validate::validate(@_, \%BasicValidate);
 
 	return undef if $args{datetime}->is_infinite;
 
     my $l = solar_longitude($args{datetime});
-    amod((2 + POSIX::floor(bf_downgrade($l) / 30)), 12);
+    amod((2 + POSIX::floor($l / 30)), 12);
 }
 
 # [1] p.245 (current_minor_term)
 sub last_minor_term_index
 {
     my $self = shift;
-    my %args = Params::Validate::validate(@_, \%BasicValidate);
+    my %args = @_; #::Validate::validate(@_, \%BasicValidate);
 
 	return undef if $args{datetime}->is_infinite;
 
     my $l = solar_longitude($args{datetime});
-    amod((3 + POSIX::floor((bf_downgrade($l) - 15) / 30)), 12);
+    amod((3 + POSIX::floor($l - 15) / 30), 12);
 }
 
 # [1] p.250
 sub no_major_term_on
 {
     my $self = shift;
-    my %args = Params::Validate::validate(@_, \%BasicValidate);
+    my %args = @_; #::Validate::validate(@_, \%BasicValidate);
 
     my $next_new_moon = DateTime::Event::Lunar->new_moon_after(
         datetime => $args{datetime});
@@ -242,7 +243,7 @@ BEGIN
     if (eval { require Memoize } && !$@) {
         Memoize::memoize('no_major_term_on', NORMALIZER => sub {
             shift;
-            my %args = Params::Validate::validate(@_, \%BasicValidate);
+            my %args = @_; #::Validate::validate(@_, \%BasicValidate);
 
             ($args{datetime}->utc_rd_values)[0]
         });
@@ -416,9 +417,29 @@ behavior)
 
 Returns true if there is a major term in the lunar month of the specified date.
 
+=head2 DateTime::Event::SolarTerm-E<gt>major_term_after(%args)
+
+Returns the next major term from the given date specified in the
+C<datetime> argument.
+
+=head2 DateTime::Event::SolarTerm-E<gt>major_term_before(%args)
+
+Returns the previous major term from the given date specified in the
+C<datetime> argument.
+
+=head2 DateTime::Event::SolarTerm-E<gt>minor_term_after(%args)
+
+Returns the next minor term from the given date specified in the
+C<datetime> argument.
+
+=head2 DateTime::Event::SolarTerm-E<gt>minor_term_before(%args)
+
+Returns the previous minor term from the given date specified in the
+C<datetime> argument.
+
 =head1 AUTHOR
 
-Daisuke Maki E<lt>daisuke@cpan.orgE<gt>
+Copyright (c) 2003-2007 Daisuke Maki E<lt>daisuke@endeworks.jpE<gt>
 
 =head1 REFERENCES
 

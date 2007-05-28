@@ -1,7 +1,14 @@
 Changes
 =======
 
-0.04
+0.05 28 May 2007 (Wow, has it been that long?)
+  - Require new version of modules.
+  - Migrate to Module::Install
+  - Use Exporter w/o subclassing
+  - Use warnings
+  - Add POD tests
+
+0.04 24 July 2004
   - Be able to handle DateTime::Infinite objects being passed to methods.
 
 0.03 30 Jan 2004

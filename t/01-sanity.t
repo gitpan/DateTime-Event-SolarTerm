@@ -8,7 +8,7 @@ BEGIN
 }
 use DateTime::Event::SolarTerm;
 use constant MAX_DELTA_MINUTES => 180;
-use constant NUM_SAMPLE => 3;
+use constant NUM_SAMPLE => 6;
 
 # XXX - make sure to include dates in wide range
 my @major_term_dates = 
@@ -74,25 +74,28 @@ sub do_major_terms
 {
     my $solar_term = DateTime::Event::SolarTerm->major_term();
 
+#     diag("Checking major term");
     foreach my $dt (map { $major_term_dates[rand(@major_term_dates)] } 1..NUM_SAMPLE) {
+#        diag("Checking $dt");
         # if $dt is a solar term date, 7 days prior to this date is *definitely*
         # after the last solar term, but before the one expressed by $dt
         my $dt0 = $dt - DateTime::Duration->new(days => 7);
-    
+
         my $next_solar_term = $solar_term->next($dt0);
-    
-        check_deltas($dt, $next_solar_term);
+
+        check_deltas($dt, $next_solar_term, "next major solar term from $dt0");
     
         # Same as before, but now we try $dt + 7 days
         my $dt1 = $dt + DateTime::Duration->new(days => 7);
         my $prev_solar_term = $solar_term->previous($dt1);
     
-        check_deltas($dt, $prev_solar_term);
+        check_deltas($dt, $prev_solar_term, "prev major solar term from $dt1");
     }
 }
 
 sub do_minor_terms
 {
+#    diag("Checking major term");
     foreach my $dt (map { $minor_term_dates[rand(@minor_term_dates)] } 1..NUM_SAMPLE) {
         # if $dt is a solar term date, 7 days prior to this date is *definitely*
         # after the last solar term, but before the one expressed by $dt
@@ -101,19 +104,19 @@ sub do_minor_terms
         my $solar_term = DateTime::Event::SolarTerm->minor_term();
         my $next_solar_term = $solar_term->next($dt0);
     
-        check_deltas($dt, $next_solar_term);
+        check_deltas($dt, $next_solar_term, "next minor term from $dt0");
     
         # Same as before, but now we try $dt + 7 days
         my $dt1 = $dt + DateTime::Duration->new(days => 7);
         my $prev_solar_term = $solar_term->previous($dt1);
     
-        check_deltas($dt, $prev_solar_term);
+        check_deltas($dt, $prev_solar_term, "prev minor term from $dt1");
     }
 }
     
 sub check_deltas
 {
-    my($expected, $actual) = @_;
+    my($expected, $actual, $msg) = @_;
 
     my $diff = $expected - $actual;
     ok($diff);
@@ -122,16 +125,13 @@ sub check_deltas
     my %deltas = $diff->deltas;
     ok( $deltas{months} == 0 &&
         $deltas{days} == 0 &&
-        abs($deltas{minutes}) < MAX_DELTA_MINUTES) or
+        abs($deltas{minutes}) < MAX_DELTA_MINUTES, $msg) or
     diag( "Expected solar term date was " . 
         $expected->strftime("%Y/%m/%d %T %Z") . " but instead we got " .
         $actual->strftime("%Y/%m/%d %T %Z") .
         " which is more than allowed delta of " .
         MAX_DELTA_MINUTES . " minutes" );
 }
-
-#local $DateTime::Util::Calc::NoBigFloat = 1;
-
 
 do_major_terms();
 do_minor_terms();
